@@ -1,5 +1,5 @@
 <template>
-  <div class="private">
+  <div class="networkdisk">
     <div class="header">
       <el-breadcrumb separator-class="el-icon-arrow-right">
         <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
@@ -19,7 +19,7 @@
 <script>
 import File from '@/components/File.vue'
 export default {
-  name: 'Private',
+  name: 'NetworkDisk',
   components: {
     File
   },
@@ -35,13 +35,13 @@ export default {
 </script>
 
 <style>
+.networkdisk{
+  margin: 20px;
+}
 .header{
-  margin: 20px 30px 0 30px;
+  margin-bottom: 30px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgb(224, 223, 223);
-}
-.content{
-  margin: 20px 20px;
 }
 .file_list{
   width: 120px;

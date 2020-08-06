@@ -1,22 +1,27 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Private from '../views/Private.vue'
+import NetworkDisk from '../views/NetworkDisk.vue'
 
 Vue.use(VueRouter)
 
   const routes = [
   {
     path: '/',
-    name: 'Private',
-    component: Private
+    name: 'NetworkDisk',
+    component: NetworkDisk
   },
   {
-    path: '/public',
-    name: 'Public',
-    component: () => import('../views/Public.vue')
+    path: '/download',
+    name: 'Download',
+    component: () => import('../views/Download.vue')
   },
   {
-    path: '/Setting',
+    path: '/upload',
+    name: 'Upload',
+    component: () => import('../views/Upload.vue')
+  },
+  {
+    path: '/setting',
     name: 'Setting',
     component: () => import('../views/Setting.vue')
   }

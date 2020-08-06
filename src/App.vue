@@ -10,10 +10,14 @@
           <i class="el-icon-s-cooperation"></i>
           <span slot="title">个人仓库</span>
         </el-menu-item>
-        <el-menu-item index="/public">
-          <i class="el-icon-menu"></i>
-          <span slot="title">公共仓库</span>
-        </el-menu-item>
+        <el-submenu index="/download">
+          <template slot="title">
+            <i class="el-icon-upload"></i>
+            <span>传输列表</span>
+          </template>
+            <el-menu-item index="/download">下载列表</el-menu-item>
+            <el-menu-item index="/upload">上传列表</el-menu-item>
+        </el-submenu>
         <el-menu-item index="/setting">
           <i class="el-icon-user-solid"></i>
           <span slot="title">个人设置</span>
@@ -23,32 +27,6 @@
     <div class="r_f">
       <router-view class="router_content"/>
     </div>
-
-    <!-- <el-row>
-      <el-col :span="4">
-        <el-menu
-          class="el-menu-vertical-demo"
-          @select="handleSelect" 
-          :router="true"
-          :default-active="activeIndex">
-          <el-menu-item index="/private">
-            <i class="el-icon-s-cooperation"></i>
-            <span slot="title">个人仓库</span>
-          </el-menu-item>
-          <el-menu-item index="/public">
-            <i class="el-icon-menu"></i>
-            <span slot="title">公共仓库</span>
-          </el-menu-item>
-          <el-menu-item index="/setting">
-            <i class="el-icon-user-solid"></i>
-            <span slot="title">个人设置</span>
-          </el-menu-item>
-        </el-menu>
-      </el-col>
-      <el-col :span="20">
-        <router-view class="router_content"/>
-      </el-col>
-    </el-row> -->
   </div>
 </template>
 
@@ -111,12 +89,12 @@ ol,ul,li{
 }
 .l_f{
   float: left;
-  width: 180px;
+  width: 200px;
   height: 100%;
 }
 .r_f{
   float: right;
-  width: calc(100% - 180px);
+  width: calc(100% - 200px);
   height: 100%;
 }
 </style>
