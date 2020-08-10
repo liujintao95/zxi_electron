@@ -71,14 +71,6 @@ ol,ul,li{
   height: 100%;
   width: 100%;
 }
-.el-row{
-  height: 100%;
-  width: 100%;
-}
-.el-col{
-  height: 100%;
-  width: 100%;
-}
 .el-menu-vertical-demo{
   height: 100%;
   width: 100%;
