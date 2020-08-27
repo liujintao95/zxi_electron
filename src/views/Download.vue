@@ -1,6 +1,7 @@
 <template>
   <div class="download">
     <div>
+      <FileChooseBtn :dir="'file'" :caption="captionText.add" v-on:btnSelectItem="getPath"></FileChooseBtn>
       <el-button-group>
         <el-button @click="selectionStart" icon="el-icon-download" size="small">下载</el-button>
         <el-button @click="selectionPause" icon="el-icon-video-pause" size="small">暂停</el-button>
@@ -52,9 +53,11 @@
 </template>
 
 <script>
+import FileChooseBtn from "../components/FileChooseBtn"
 export default {
   name: 'Download',
   components: {
+    FileChooseBtn,
   },
   data() {
     return{
@@ -69,7 +72,8 @@ export default {
         file_size: '425KB',
         progress: 34
       }],
-      multipleSelection: []
+      multipleSelection: [],
+      captionText: {store: 'store', add: 'add'}
     };
   },
   methods: {
@@ -95,6 +99,9 @@ export default {
     cancelDownload(row){
       console.log(row)
     },
+    getPath(path){
+      console.log("getPath", path)
+    }
   }
 }
 </script>

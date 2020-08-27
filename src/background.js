@@ -1,8 +1,9 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, dialog, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -22,7 +23,11 @@ function createWindow() {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
+      javascript: true,
+      plugins: true,
+      nodeIntegration: true,
+      webSecurity: false,
+      preload: path.join(__dirname, './renderer.js')
     }
   })
 
@@ -87,3 +92,13 @@ if (isDevelopment) {
     })
   }
 }
+
+ipcMain.on('open-directory-dialog', function (event, p) {
+  dialog.showOpenDialog({
+    properties: [p]
+  }).then(res => {
+    if (res.filePaths) {
+      event.sender.send('selectedItem', res.filePaths[0])
+    }
+  })
+});
