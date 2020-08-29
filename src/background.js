@@ -3,8 +3,13 @@
 import { app, protocol, BrowserWindow, dialog, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-const path = require('path')
+import fileHandler from './node_handler/file_handler'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
+global.file = {
+  getFileInfo: fileHandler.getFileInfo,
+  getFilesList: fileHandler.getFilesList,
+}
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -23,11 +28,7 @@ function createWindow() {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      javascript: true,
-      plugins: true,
       nodeIntegration: true,
-      webSecurity: false,
-      preload: path.join(__dirname, './renderer.js')
     }
   })
 
