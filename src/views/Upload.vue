@@ -90,26 +90,39 @@ export default {
     },
 
     selectFile(path) {
-      this.$file.getFilesList(path).then(data=>{
+      this.$file.getFilesList(path, true).then((data) => {
         console.log(data)
-      })
+        this.$axios
+          .post("/zxi/auth/file/save", 
+            this.$qs.stringify({
+              files_json: data,
+              root: path
+            }, { indices: false })
+          )
+          .then((response) => {
+            console.log(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      });
     },
 
-    openDoalog(type){
+    openDoalog(type) {
       let _this = this;
       let ipc = ipcRenderer;
-      let result = []
+      let result = [];
       if (type == "file") {
         ipc.send("open-directory-dialog", "openFile");
       } else {
         ipc.send("open-directory-dialog", "openDirectory");
       }
       ipc.once("selectedItem", function (event, path) {
-        if(path){
-          _this.selectFile(path)
+        if (path) {
+          _this.selectFile(path);
         }
       });
-    }
+    },
   },
 };
 </script>
