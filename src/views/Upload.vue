@@ -89,11 +89,29 @@ export default {
       console.log(row);
     },
 
-    selectFile(path) {
+    uploadFile(path) {
       this.$file.getFilesList(path, true).then((data) => {
         console.log(data)
         this.$axios
-          .post("/zxi/auth/file/save", 
+          .post("/zxi/auth/file/uploadfile", 
+            this.$qs.stringify({
+              file_json: data[0],
+            }, { indices: false })
+          )
+          .then((response) => {
+            console.log(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      });
+    },
+
+    uploadDir(path) {
+      this.$file.getFilesList(path, true).then((data) => {
+        console.log(data)
+        this.$axios
+          .post("/zxi/auth/file/uploadfiles", 
             this.$qs.stringify({
               files_json: data,
               root: path
@@ -118,12 +136,18 @@ export default {
         ipc.send("open-directory-dialog", "openDirectory");
       }
       ipc.once("selectedItem", function (event, path) {
-        if (path) {
-          _this.selectFile(path);
+        if (path && type == "file") {
+          _this.uploadFile(path);
+        } else {
+          _this.uploadDir(path);
         }
       });
     },
   },
+
+  mounted() {
+
+  }
 };
 </script>
 
