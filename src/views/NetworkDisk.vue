@@ -2,9 +2,10 @@
   <div class="networkdisk">
     <div class="header">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item><a href="/">个人资料</a></el-breadcrumb-item>
-        <el-breadcrumb-item>文件</a></el-breadcrumb-item>
+        <el-breadcrumb-item><a @click="dirChange()">首页</a></el-breadcrumb-item>
+        <el-breadcrumb-item v-for="item, index in history_list" :key="index+'breadcrumb'">
+          <a @click="dirChange(item, index)">{{ item.name }}</a>
+        </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
     
@@ -30,9 +31,11 @@ export default {
       dir_list: [],
       file_list: [],
       cur_dir: {
+        id: 0,
         path: "",
-        id: 0
-      }
+        name: "",
+      },
+      history_list: []
     };
   },
   methods: {
@@ -54,7 +57,39 @@ export default {
       });
     },
     openDir(msg){
-      console.log("open:", msg.Name)
+      console.log("befor",this.history_list)
+      this.cur_dir.id = msg.Id
+      this.cur_dir.name = msg.Name
+      if (msg.Path.charAt(msg.Path.length - 1) != '\\'){
+        this.cur_dir.path = msg.Path + "\\" + msg.Name
+      } else {
+        this.cur_dir.path = msg.Path + msg.Name
+      }
+      this.history_list.push({
+        id: msg.Id,
+        name: msg.Name,
+        path: this.cur_dir.path,
+      })
+      console.log(this.history_list)
+      this.filesShow()
+    },
+    dirChange(item, index){
+      if(item){
+        this.cur_dir = {
+          id: item.id,
+          path: item.path,
+          name: item.name,
+        }
+        this.history_list = this.history_list.slice(0,index+1)
+      } else {
+        this.history_list = []
+        this.cur_dir = {
+          id: 0,
+          path: "",
+          name: "",
+        }
+      }
+      this.filesShow()
     },
     openFile(msg){
 
@@ -79,6 +114,7 @@ export default {
 .file_list{
   width: 120px;
   margin: 0 10px;
+  height: 150px;
   float: left;
 }
 </style>

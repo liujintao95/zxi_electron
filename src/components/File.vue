@@ -4,7 +4,7 @@
       <img :src="showImg" width="100px" height="100px"/>
     </div>
     <div class="text" :title="msg.Name" @click="openFile">{{ msg.Name }}</div>
-    <div v-show="iconShow">
+    <div v-if="iconShow">
       <i class="el-icon-download icon" title="下载" @click="downloadFile"></i>
       <i class="el-icon-right icon" title="移动" @click="moveFile"></i>
       <i class="el-icon-edit icon" title="重命名" @click="renameFile"></i>
@@ -76,7 +76,7 @@ export default {
   },
   methods: {
     openFile(){
-      console.log('打开文件夹')
+      console.log('打开文件')
     },
     downloadFile(){
       console.log('下载文件')
@@ -93,7 +93,6 @@ export default {
     getImg(){
       let name_list = this.msg.Name.split('.')
       let key = name_list[name_list.length - 1]
-      console.log(this.imgMap[key])
       
       if (this.imgMap[key] != undefined) {
         this.showImg = this.imgMap[key]
