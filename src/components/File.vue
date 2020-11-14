@@ -94,7 +94,7 @@ export default {
       let name_list = this.msg.Name.split('.')
       let key = name_list[name_list.length - 1]
       
-      if (this.imgMap[key] != undefined) {
+      if (this.imgMap[key] !== undefined) {
         this.showImg = this.imgMap[key]
       }
     }
@@ -122,7 +122,7 @@ export default {
   text-overflow: ellipsis;
 }
 .text:hover{
-  color: rgba(39, 161, 247);
+  color: rgb(39, 161, 247);
 }
 .icon{
   font-size: 18px;

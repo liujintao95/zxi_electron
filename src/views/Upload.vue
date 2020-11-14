@@ -27,12 +27,12 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="file_name" label="文件名"></el-table-column>
-        <el-table-column prop="file_size" label="大小" width="120"></el-table-column>
-        <el-table-column prop="progress" label="进度条" width="240">
+        <el-table-column prop="Name" label="文件名"></el-table-column>
+        <el-table-column prop="Size" label="大小" width="120"></el-table-column>
+        <el-table-column prop="Progress" label="进度条" width="240">
           <template slot-scope="scope">
-            <el-progress :percentage="scope.row.progress" v-if="scope.row.progress!=100"></el-progress>
-            <el-progress :percentage="scope.row.progress" v-else status="success"></el-progress>
+            <el-progress :percentage="scope.row.Progress" v-if="scope.row.Progress!==100"></el-progress>
+            <el-progress :percentage="scope.row.Progress" v-else status="success"></el-progress>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150" align="center">
@@ -53,20 +53,7 @@ export default {
   name: "Upload",
   data() {
     return {
-      tableData: [
-        {
-          id: 1,
-          file_name: "新建文件",
-          file_size: "145KB",
-          progress: 100,
-        },
-        {
-          id: 2,
-          file_name: "新建文件2",
-          file_size: "425KB",
-          progress: 34,
-        },
-      ],
+      tableData: [],
       multipleSelection: [],
     };
   },
@@ -90,16 +77,11 @@ export default {
     },
 
     uploadFile(path) {
-      this.$file.getFilesList(path, true).then((data) => {
-        console.log(data)
+      this.$file.getFilesList(path).then((data) => {
         this.$axios
-          .post("/zxi/auth/file/uploadfile", 
-            this.$qs.stringify({
-              file_json: data[0],
-            }, { indices: false })
-          )
+          .post("/zxi/auth/file/savefileinfo", data[0])
           .then((response) => {
-            console.log(response);
+            this.showUploads()
           })
           .catch((error) => {
             console.log(error);
@@ -108,17 +90,17 @@ export default {
     },
 
     uploadDir(path) {
-      this.$file.getFilesList(path, true).then((data) => {
+      this.$file.getFilesList(path).then((data) => {
         console.log(data)
         this.$axios
-          .post("/zxi/auth/file/uploadfiles", 
-            this.$qs.stringify({
-              files_json: data,
-              root: path
-            }, { indices: false })
+          .post("/zxi/auth/file/savefilesinfo",
+              {
+                files: data,
+                root: path
+              }
           )
           .then((response) => {
-            console.log(response);
+            this.showUploads()
           })
           .catch((error) => {
             console.log(error);
@@ -130,23 +112,33 @@ export default {
       let _this = this;
       let ipc = ipcRenderer;
       let result = [];
-      if (type == "file") {
+      if (type === "file") {
         ipc.send("open-directory-dialog", "openFile");
       } else {
         ipc.send("open-directory-dialog", "openDirectory");
       }
       ipc.once("selectedItem", function (event, path) {
-        if (path && type == "file") {
+        if (path && type === "file") {
           _this.uploadFile(path);
-        } else {
+        } else if (path) {
           _this.uploadDir(path);
         }
       });
     },
+    showUploads(){
+      this.$axios.get(
+          "/zxi/auth/file/showuploads"
+      ).then((response) => {
+        console.log(response)
+        let data = response.data
+        this.tableData = data.upload_list
+      }).catch((error) => {
+        console.log(error);
+      });
+    },
   },
-
   mounted() {
-
+    this.showUploads()
   }
 };
 </script>

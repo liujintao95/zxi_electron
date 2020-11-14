@@ -32,7 +32,7 @@
           label="进度条"
           width="240">
           <template slot-scope="scope">
-            <el-progress :percentage="scope.row.progress" v-if="scope.row.progress!=100"></el-progress>
+            <el-progress :percentage="scope.row.progress" v-if="scope.row.progress!==100"></el-progress>
             <el-progress :percentage="scope.row.progress" v-else status="success"></el-progress>
           </template>
         </el-table-column>

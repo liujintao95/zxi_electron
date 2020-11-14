@@ -66,7 +66,7 @@ export default {
   text-overflow: ellipsis;
 }
 .text:hover{
-  color: rgba(39, 161, 247);
+  color: rgb(39, 161, 247)
 }
 .icon{
   font-size: 18px;

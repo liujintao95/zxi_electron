@@ -22,14 +22,14 @@
               <el-radio label="无限制"></el-radio>
               <el-radio label="限数为"></el-radio>
             </el-radio-group>
-            <el-input placeholder v-model="form.upload_rate" :disabled="form.upload_restrictions=='无限制'" class="input-rate"></el-input>KB/s
+            <el-input placeholder v-model="form.upload_rate" :disabled="form.upload_restrictions==='无限制'" class="input-rate"></el-input>KB/s
           </el-form-item>
           <el-form-item label="下载传输速率">
             <el-radio-group v-model="form.download_restrictions">
               <el-radio label="无限制"></el-radio>
               <el-radio label="限数为"></el-radio>
             </el-radio-group>
-            <el-input placeholder v-model="form.download_rate" :disabled="form.download_restrictions=='无限制'" class="input-rate"></el-input>KB/s
+            <el-input placeholder v-model="form.download_rate" :disabled="form.download_restrictions==='无限制'" class="input-rate"></el-input>KB/s
           </el-form-item>
         </div>
         <el-form-item>
@@ -80,7 +80,7 @@ export default {
       var aProps = Object.getOwnPropertyNames(a);
       var bProps = Object.getOwnPropertyNames(b);
 
-      if (aProps.length != bProps.length) {
+      if (aProps.length !== bProps.length) {
         return false;
       }
 
@@ -118,12 +118,6 @@ export default {
 }
 .option_form {
   height: 100%;
-}
-.input {
-  width: 80%;
-}
-.item {
-  margin: 30px 0;
 }
 .input-rate {
   margin-left: 5px;
