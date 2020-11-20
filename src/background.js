@@ -9,6 +9,8 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 global.file = {
   getFileInfo: fileHandler.getFileInfo,
   getFilesList: fileHandler.getFilesList,
+  fileInfo: fileHandler.fileInfo,
+  uploadSmallFile: fileHandler.uploadSmallFile,
 }
 
 // Keep a global reference of the window object, if you don't, the window will

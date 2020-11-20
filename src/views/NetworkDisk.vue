@@ -60,8 +60,8 @@ export default {
       console.log("befor",this.history_list)
       this.cur_dir.id = msg.Id
       this.cur_dir.name = msg.Name
-      if (msg.Path.charAt(msg.Path.length - 1) !== '\\'){
-        this.cur_dir.path = msg.Path + "\\" + msg.Name
+      if (msg.Path.charAt(msg.Path.length - 1) !== "/"){
+        this.cur_dir.path = msg.Path + "/" + msg.Name
       } else {
         this.cur_dir.path = msg.Path + msg.Name
       }

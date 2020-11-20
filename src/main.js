@@ -6,7 +6,7 @@ import axios from 'axios'
 import qs from 'qs'
 import 'element-ui/lib/theme-chalk/index.css';
 
-axios.defaults.baseURL = 'http://127.0.0.1:5000'
+axios.defaults.baseURL = process.env.VUE_APP_URL
 axios.defaults.adapter = require('axios/lib/adapters/http');
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
