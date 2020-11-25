@@ -10,7 +10,10 @@ global.file = {
   getFileInfo: fileHandler.getFileInfo,
   getFilesList: fileHandler.getFilesList,
   fileInfo: fileHandler.fileInfo,
-  uploadSmallFile: fileHandler.uploadSmallFile,
+  readSmallFile: fileHandler.readSmallFile,
+  createFileStream: fileHandler.createFileStream,
+  uploadFileStream: fileHandler.uploadFileStream,
+  pauseUploadFileStream: fileHandler.pauseUploadFileStream,
 }
 
 // Keep a global reference of the window object, if you don't, the window will

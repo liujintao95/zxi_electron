@@ -75,18 +75,47 @@ export default {
       this.cpage = page
       this.showUploads()
     },
-    uploadLocalFile(file_id, file_name, local_path) {
+    uploadLocalFile(upload_id, file_name, local_path) {
       let states = this.$file.fileInfo(local_path)
       if (states.size < 1024*1024){
-        this.$file.uploadSmallFile(file_id, local_path).then(()=>{
+        this.uploadSmallFile(upload_id, local_path).then(()=>{
           this.showUploads()
           this.$message.success(`${file_name} 上传成功`)
         }).catch(err=>{
           console.log(err)
         })
       } else {
-        // this.$file.uploadFileBlock(file_id, buffer)
+        this.uploadBigFile(upload_id, local_path).then(() => {
+          this.showUploads()
+          this.$message.success(`${file_name} 上传成功`)
+        }).catch(err => {
+          console.log(err)
+        })
       }
+    },
+    async uploadBigFile(upload_id, local_path){
+      let upload_info = await this.showUploadInfo(upload_id)
+      let stream = this.$file.createFileStream(local_path, upload_info["BlockSize"])
+      for(let i; i<this.tableData.length; i++){
+        if(this.tableData[i]["Id"] === upload_id){
+          this.tableData[i]["stream"] = stream
+        }
+      }
+      await this.$file.uploadFileStream(stream, upload_id, upload_info["BlockList"])
+
+    },
+    uploadSmallFile(upload_id, local_path){
+      let file = this.$file.readSmallFile(local_path)
+      let formData = new FormData()
+      let headers = formData.getHeaders()
+
+      formData.append('id', upload_id)
+      formData.append('file', file)
+      this.$axios.post(
+          "/zxi/auth/upload/file",
+          formData,
+          {headers}
+      )
     },
     handleSelectionChange(val) {
       console.log(val);
@@ -96,44 +125,45 @@ export default {
     selectionPause() {},
     selectionCancel() {},
     startUpload(row) {
-      this.uploadLocalFile(row.Id, row.Name, row.LocalPath)
+      this.uploadLocalFile(row['Id'], row["Name"], row['LocalPath'])
     },
     pauseUpload(row) {
       console.log(row);
+      row["stream"].emit("end")
     },
     cancelUpload(row) {
       console.log(row);
     },
     saveFile(path) {
-      this.$file.getFilesList(path).then((data) => {
+      this.$file.getFilesList(path).then(data=>{
         this.$axios
-          .post("/zxi/auth/file/savefileinfo", data[0])
-          .then(() => {
-            this.cpage = 1
-            this.showUploads()
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      });
+            .post("/zxi/auth/file/savefileinfo", data[0])
+            .then(() => {
+              this.cpage = 1
+              this.showUploads()
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+      })
     },
     saveDir(path) {
-      this.$file.getFilesList(path).then((data) => {
+      this.$file.getFilesList(path).then(data=>{
         this.$axios
-          .post("/zxi/auth/file/savefilesinfo",
-              {
-                files: data,
-                root: path
-              }
-          )
-          .then(() => {
-            this.cpage = 1
-            this.showUploads()
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      });
+            .post("/zxi/auth/file/savefilesinfo",
+                {
+                  files: data,
+                  root: path
+                }
+            )
+            .then(() => {
+              this.cpage = 1
+              this.showUploads()
+            })
+            .catch((error) => {
+              console.log(error);
+            })
+      })
     },
     openDoalog(type) {
       let _this = this;
@@ -151,6 +181,16 @@ export default {
         }
       });
     },
+    async showUploadInfo(upload_id){
+      let response = await this.$axios.get(
+          "/zxi/auth/upload/info", {
+            params:{
+              id: upload_id
+            }
+          }
+      )
+      return response.data["upload_info"]
+    },
     showUploads(){
       this.$axios.get(
           "/zxi/auth/upload/show", {
@@ -163,19 +203,38 @@ export default {
         let data = response.data
         this.total = data["count"]
         this.tableData = data["upload_list"]
-        for (let upload_info of this.tableData){
-          if (upload_info["Uploading"] && !upload_info["IsComplete"]){
-            this.uploadLocalFile(
-                upload_info["Id"], upload_info["Name"], upload_info["LocalPath"])
-          }
-        }
       }).catch((error) => {
         console.log(error);
       });
     },
+    uploadStart(){
+      for (let upload_info of this.tableData){
+        if (upload_info["Uploading"] && !upload_info["IsComplete"]){
+          this.uploadLocalFile(
+              upload_info["Id"], upload_info["Name"], upload_info["LocalPath"])
+        }
+      }
+    },
+    openUpload(){
+      this.$axios.get(
+          "/zxi/auth/upload/show", {
+            params:{
+              page: this.cpage,
+              size: this.page_size
+            }
+          }
+      ).then((response) => {
+        let data = response.data
+        this.total = data["count"]
+        this.tableData = data["upload_list"]
+        this.uploadStart()
+      }).catch((error) => {
+        console.log(error);
+      });
+    }
   },
   mounted() {
-    this.showUploads()
+    this.openUpload()
   }
 };
 </script>
