@@ -103,7 +103,7 @@ function uploadFileStream(stream, upload_id, block_list){
   })
 }
 
-async function pauseUploadFileStream(stream){
+function pauseUploadFileStream(stream){
   return stream.emit("end")
 }
 

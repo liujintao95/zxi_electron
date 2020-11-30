@@ -67,7 +67,8 @@ export default {
       multipleSelection: [],
       total: 100,
       page_size: 10,
-      cpage: 1
+      cpage: 1,
+      interval_map: {}
     };
   },
   methods: {
@@ -76,46 +77,60 @@ export default {
       this.showUploads()
     },
     uploadLocalFile(upload_id, file_name, local_path) {
-      let states = this.$file.fileInfo(local_path)
-      if (states.size < 1024*1024){
-        this.uploadSmallFile(upload_id, local_path).then(()=>{
-          this.showUploads()
-          this.$message.success(`${file_name} 上传成功`)
-        }).catch(err=>{
-          console.log(err)
-        })
-      } else {
-        this.uploadBigFile(upload_id, local_path).then(() => {
-          this.showUploads()
-          this.$message.success(`${file_name} 上传成功`)
-        }).catch(err => {
-          console.log(err)
-        })
-      }
+      this.showUploadInfo(upload_id).then(data=>{
+        if(data["IsComplete"] === 0){
+          let states = this.$file.fileInfo(local_path)
+          if (states.size < 1024*1024){
+            this.uploadSmallFile(upload_id, local_path).then(()=>{
+              this.showUploads()
+              this.$message.success(`${file_name} 上传成功`)
+            }).catch(err=>{
+              console.log(err)
+            })
+          } else {
+            this.uploadBigFile(upload_id, local_path, data["BlockSize"], data["BlockList"]).then(() => {
+              this.showUploads()
+              this.$message.success(`${file_name} 上传成功`)
+            }).catch(err => {
+              console.log(err)
+            })
+            this.interval_map[upload_id] = setInterval(this.showProgress, 3000, upload_id)
+          }
+        }
+      }).catch(err=>{
+        console.log(err)
+      })
     },
-    async uploadBigFile(upload_id, local_path){
-      let upload_info = await this.showUploadInfo(upload_id)
-      let stream = this.$file.createFileStream(local_path, upload_info["BlockSize"])
-      for(let i; i<this.tableData.length; i++){
+    async uploadBigFile(upload_id, local_path, block_size, block_list){
+      let stream = this.$file.createFileStream(local_path, block_size)
+      for(let i=0; i<this.tableData.length; i++){
         if(this.tableData[i]["Id"] === upload_id){
           this.tableData[i]["stream"] = stream
         }
       }
-      await this.$file.uploadFileStream(stream, upload_id, upload_info["BlockList"])
+      await this.$file.uploadFileStream(stream, upload_id, block_list)
 
     },
-    uploadSmallFile(upload_id, local_path){
+    async uploadSmallFile(upload_id, local_path){
       let file = this.$file.readSmallFile(local_path)
       let formData = new FormData()
       let headers = formData.getHeaders()
 
       formData.append('id', upload_id)
       formData.append('file', file)
-      this.$axios.post(
+      await this.$axios.post(
           "/zxi/auth/upload/file",
           formData,
           {headers}
       )
+    },
+    uploadStart(){
+      for (let upload_info of this.tableData){
+        if (upload_info["Uploading"] && !upload_info["IsComplete"]){
+          this.uploadLocalFile(
+              upload_info["Id"], upload_info["Name"], upload_info["LocalPath"])
+        }
+      }
     },
     handleSelectionChange(val) {
       console.log(val);
@@ -130,6 +145,7 @@ export default {
     pauseUpload(row) {
       console.log(row);
       row["stream"].emit("end")
+      clearInterval(this.interval_map[row['Id']])
     },
     cancelUpload(row) {
       console.log(row);
@@ -207,13 +223,26 @@ export default {
         console.log(error);
       });
     },
-    uploadStart(){
-      for (let upload_info of this.tableData){
-        if (upload_info["Uploading"] && !upload_info["IsComplete"]){
-          this.uploadLocalFile(
-              upload_info["Id"], upload_info["Name"], upload_info["LocalPath"])
+    showProgress(upload_id){
+      this.$axios.get(
+          "/zxi/auth/upload/progress", {
+            params:{
+              id: upload_id
+            }
+          }
+      ).then((response) => {
+        let progress = response.data["progress"]
+        for(let i=0; i<this.tableData.length; i++){
+          if(this.tableData[i]["Id"] === upload_id){
+            this.tableData[i]["Progress"] = progress
+          }
         }
-      }
+        if (progress === 100){
+          clearInterval(this.interval_map[upload_id])
+        }
+      }).catch((error) => {
+        console.log(error);
+      });
     },
     openUpload(){
       this.$axios.get(
