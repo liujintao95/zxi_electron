@@ -24,6 +24,7 @@
     "electron": "^9.0.0",
     "electron-devtools-installer": "^3.1.0",
     "form-data": "^3.0.0",
+    "prettier": "^2.2.1",
     "vue-cli-plugin-electron-builder": "~2.0.0-rc.4",
     "vue-template-compiler": "^2.6.11"
   },

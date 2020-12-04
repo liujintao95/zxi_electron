@@ -9,37 +9,37 @@
     </div>
     <div>
       <el-table
-        ref="multipleTable"
-        :data="tableData"
-        tooltip-effect="dark"
-        style="width: 100%"
-        @selection-change="handleSelectionChange">
+          ref="multipleTable"
+          :data="tableData"
+          tooltip-effect="dark"
+          style="width: 100%"
+          @selection-change="handleSelectionChange">
         <el-table-column
-          type="selection"
-          width="55">
+            type="selection"
+            width="55">
         </el-table-column>
         <el-table-column
-          prop="file_name"
-          label="文件名">
+            prop="file_name"
+            label="文件名">
         </el-table-column>
         <el-table-column
-          prop="file_size"
-          label="大小"
-          width="120">
+            prop="file_size"
+            label="大小"
+            width="120">
         </el-table-column>
         <el-table-column
-          prop="progress"
-          label="进度条"
-          width="240">
+            prop="progress"
+            label="进度条"
+            width="240">
           <template slot-scope="scope">
             <el-progress :percentage="scope.row.progress" v-if="scope.row.progress!==100"></el-progress>
             <el-progress :percentage="scope.row.progress" v-else status="success"></el-progress>
           </template>
         </el-table-column>
         <el-table-column
-          label="操作"
-          width="150"
-          align="center">
+            label="操作"
+            width="150"
+            align="center">
           <template slot-scope="scope">
             <el-button @click="startDownload(scope.row)" type="text" size="small">下载</el-button>
             <el-button @click="pauseDownload(scope.row)" type="text" size="small">暂停</el-button>
@@ -55,7 +55,7 @@
 export default {
   name: 'Download',
   data() {
-    return{
+    return {
       tableData: [{
         id: 1,
         file_name: '新建文件',
@@ -75,22 +75,22 @@ export default {
       console.log(val)
       this.multipleSelection = val;
     },
-    selectionStart(){
+    selectionStart() {
 
     },
-    selectionPause(){
+    selectionPause() {
 
     },
-    selectioncancel(){
+    selectioncancel() {
 
     },
-    startDownload(row){
+    startDownload(row) {
       console.log(row)
     },
-    pauseDownload(row){
+    pauseDownload(row) {
       console.log(row)
     },
-    cancelDownload(row){
+    cancelDownload(row) {
       console.log(row)
     },
   }
@@ -98,7 +98,7 @@ export default {
 </script>
 
 <style>
-.download{
+.download {
   margin: 20px;
 }
 </style>

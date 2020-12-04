@@ -1,10 +1,10 @@
 <template>
-  <div class="dir" @mouseleave="iconShow=false" @mouseenter="iconShow=true" @dblclick="openFile">
+  <div class="dir" @mouseleave="icon_show=false" @mouseenter="icon_show=true" @dblclick="openFile">
     <div class='file_img'>
-      <img :src="imgDir" width="100px" height="100px"/>
+      <img :src="img_dir" width="100px" height="100px"/>
     </div>
-    <div class="text" :title="msg.Name" @click="openFile">{{ msg.Name }}</div>
-    <div v-show="iconShow">
+    <div class="text" :title="msg.name" @click="openFile">{{ msg.name }}</div>
+    <div v-show="icon_show">
       <i class="el-icon-download icon" title="下载" @click="downloadFile"></i>
       <i class="el-icon-right icon" title="移动" @click="moveFile"></i>
       <i class="el-icon-edit icon" title="重命名" @click="renameFile"></i>
@@ -19,31 +19,31 @@ export default {
   components: {
     File,
   },
-  props:{
+  props: {
     msg: {
       type: Object,
     }
   },
   data() {
     return {
-      iconShow:false,
-      imgDir: require("../assets/dir.png"),
+      icon_show: false,
+      img_dir: require("../assets/dir.png"),
     };
   },
   methods: {
-    openFile(){
+    openFile() {
       this.$emit('open', this.msg);
     },
-    downloadFile(){
+    downloadFile() {
       console.log('下载文件夹')
     },
-    moveFile(){
+    moveFile() {
       console.log('移动文件夹')
     },
-    renameFile(){
+    renameFile() {
       console.log('重命名文件夹')
     },
-    deleteFile(){
+    deleteFile() {
       console.log('删除文件夹')
     },
   }
@@ -51,26 +51,30 @@ export default {
 </script>
 
 <style>
-.dir{
+.dir {
   text-align: center;
   padding: 10px;
 }
-.dir:hover{
+
+.dir:hover {
   background: rgb(226, 226, 226);
 }
-.text{
+
+.text {
   font-size: 16px;
-  cursor:pointer;
+  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.text:hover{
+
+.text:hover {
   color: rgb(39, 161, 247)
 }
-.icon{
+
+.icon {
   font-size: 18px;
   margin: 0 5px;
-  cursor:pointer;
+  cursor: pointer;
 }
 </style>

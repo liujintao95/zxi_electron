@@ -1,10 +1,10 @@
 <template>
-  <div class="file" @mouseleave="iconShow=false" @mouseenter="iconShow=true" @dblclick="openFile">
+  <div class="file" @mouseleave="icon_show=false" @mouseenter="icon_show=true" @dblclick="openFile">
     <div class='file_img'>
-      <img :src="showImg" width="100px" height="100px"/>
+      <img :src="show_img" width="100px" height="100px"/>
     </div>
-    <div class="text" :title="msg.Name" @click="openFile">{{ msg.Name }}</div>
-    <div v-if="iconShow">
+    <div class="text" :title="msg.name" @click="openFile">{{ msg.name }}</div>
+    <div v-if="icon_show">
       <i class="el-icon-download icon" title="下载" @click="downloadFile"></i>
       <i class="el-icon-right icon" title="移动" @click="moveFile"></i>
       <i class="el-icon-edit icon" title="重命名" @click="renameFile"></i>
@@ -19,16 +19,16 @@ export default {
   components: {
     File,
   },
-  props:{
+  props: {
     msg: {
       type: Object,
     }
   },
   data() {
     return {
-      iconShow:false,
-      showImg: require("../assets/text.png"),
-      imgMap: {
+      icon_show: false,
+      show_img: require("../assets/text.png"),
+      img_map: {
         accdb: require("../assets/accdb.png"),
         avi: require("../assets/avi.png"),
         bmp: require("../assets/bmp.png"),
@@ -75,58 +75,62 @@ export default {
     };
   },
   methods: {
-    openFile(){
+    openFile() {
       console.log('打开文件')
     },
-    downloadFile(){
+    downloadFile() {
       console.log('下载文件')
     },
-    moveFile(){
+    moveFile() {
       console.log('移动文件')
     },
-    renameFile(){
+    renameFile() {
       console.log('重命名文件')
     },
-    deleteFile(){
+    deleteFile() {
       console.log('删除文件')
     },
-    getImg(){
-      let name_list = this.msg.Name.split('.')
+    getImg() {
+      let name_list = this.msg.name.split('.')
       let key = name_list[name_list.length - 1]
-      
-      if (this.imgMap[key] !== undefined) {
-        this.showImg = this.imgMap[key]
+
+      if (this.img_map[key] !== undefined) {
+        this.show_img = this.img_map[key]
       }
     }
   },
 
-  mounted(){
+  mounted() {
     this.getImg()
   }
 };
 </script>
 
 <style>
-.file{
+.file {
   text-align: center;
   padding: 10px;
 }
-.file:hover{
+
+.file:hover {
   background: rgb(226, 226, 226);
 }
-.text{
+
+.text {
   font-size: 16px;
-  cursor:pointer;
+  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.text:hover{
+
+.text:hover {
   color: rgb(39, 161, 247);
 }
-.icon{
+
+.icon {
   font-size: 18px;
   margin: 0 5px;
-  cursor:pointer;
+  cursor: pointer;
 }
 </style>

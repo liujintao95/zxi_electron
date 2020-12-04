@@ -10,7 +10,7 @@ global.file = {
   getFileInfo: fileHandler.getFileInfo,
   getFilesList: fileHandler.getFilesList,
   fileInfo: fileHandler.fileInfo,
-  readSmallFile: fileHandler.readSmallFile,
+  uploadFile: fileHandler.uploadFile,
   createFileStream: fileHandler.createFileStream,
   uploadFileStream: fileHandler.uploadFileStream,
   pauseUploadFileStream: fileHandler.pauseUploadFileStream,

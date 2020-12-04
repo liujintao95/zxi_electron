@@ -20,27 +20,32 @@
     </div>
     <div style="height: 100%">
       <el-table
-        ref="multipleTable"
-        :data="tableData"
-        tooltip-effect="dark"
-        height="85%"
-        style="width: 100%;"
-        @selection-change="handleSelectionChange"
+          ref="multipleTable"
+          :data="tableData"
+          tooltip-effect="dark"
+          height="85%"
+          style="width: 100%;"
+          @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="Name" label="文件名"></el-table-column>
-        <el-table-column prop="Size" label="大小" width="120"></el-table-column>
-        <el-table-column prop="Progress" label="进度条" width="240">
+        <el-table-column prop="name" label="文件名"></el-table-column>
+        <el-table-column prop="size_fmt" label="大小" width="120"></el-table-column>
+        <el-table-column prop="progress" label="进度条" width="240">
           <template slot-scope="scope">
-            <el-progress :percentage="scope.row.Progress" v-if="scope.row.Progress!==100"></el-progress>
-            <el-progress :percentage="scope.row.Progress" v-else status="success"></el-progress>
+            <el-progress :percentage="scope.row.progress" v-if="scope.row.progress!==100"></el-progress>
+            <el-progress :percentage="scope.row.progress" v-else status="success"></el-progress>
           </template>
         </el-table-column>
+        <el-table-column prop="rate" label="上传速率" width="120"></el-table-column>
         <el-table-column label="操作" width="150" align="center">
           <template slot-scope="scope">
-            <el-button v-if="!scope.row['Uploading'] && !scope.row['IsComplete']" @click="startUpload(scope.row)" type="text" size="small">上传</el-button>
-            <el-button v-else-if="scope.row['Uploading'] && !scope.row['IsComplete']" @click="pauseUpload(scope.row)" type="text" size="small">暂停</el-button>
-            <el-button v-if="!scope.row['IsComplete']" @click="cancelUpload(scope.row)" type="text" size="small">取消</el-button>
+            <el-button v-if="!scope.row['uploading'] && !scope.row['is_complete']" @click="startUpload(scope.row)"
+                       type="text" size="small">上传
+            </el-button>
+            <el-button v-else-if="scope.row['uploading'] && !scope.row['is_complete']" @click="pauseUpload(scope.row)"
+                       type="text" size="small">暂停
+            </el-button>
+            <el-button v-show="!scope.row['is_complete']" @click="cancelUpload(scope.row)" type="text" size="small">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -63,6 +68,7 @@ export default {
   name: "Upload",
   data() {
     return {
+      timeout: 3000,
       tableData: [],
       multipleSelection: [],
       total: 100,
@@ -72,91 +78,128 @@ export default {
     };
   },
   methods: {
-    pageChange(page){
+    pageChange(page) {
       this.cpage = page
-      this.showUploads()
+      this.showUploadTable()
     },
     uploadLocalFile(upload_id, file_name, local_path) {
-      this.showUploadInfo(upload_id).then(data=>{
-        if(data["IsComplete"] === 0){
-          let states = this.$file.fileInfo(local_path)
-          if (states.size < 1024*1024){
-            this.uploadSmallFile(upload_id, local_path).then(()=>{
-              this.showUploads()
-              this.$message.success(`${file_name} 上传成功`)
-            }).catch(err=>{
-              console.log(err)
-            })
-          } else {
-            this.uploadBigFile(upload_id, local_path, data["BlockSize"], data["BlockList"]).then(() => {
-              this.showUploads()
-              this.$message.success(`${file_name} 上传成功`)
-            }).catch(err => {
-              console.log(err)
-            })
-            this.interval_map[upload_id] = setInterval(this.showProgress, 3000, upload_id)
-          }
+      this.showUploadInfo(upload_id).then(data => {
+        let upload = data["upload_info"]["upload_map"]
+        let block_list = data["upload_info"]["block_list"]
+        if (upload["is_complete"] === 0) {
+          this.uploadFile(upload_id, local_path, upload["block_size"], block_list)
+              .catch(err => {
+                console.log(err)
+              })
+          this.interval_map[upload_id] = setInterval(this.showProgress, this.timeout, upload_id)
         }
-      }).catch(err=>{
+      }).catch(err => {
         console.log(err)
       })
     },
-    async uploadBigFile(upload_id, local_path, block_size, block_list){
+    async uploadFile(upload_id, local_path, block_size, block_list) {
       let stream = this.$file.createFileStream(local_path, block_size)
-      for(let i=0; i<this.tableData.length; i++){
-        if(this.tableData[i]["Id"] === upload_id){
-          this.tableData[i]["stream"] = stream
-        }
-      }
+      this.$stream_map[upload_id] = stream
       await this.$file.uploadFileStream(stream, upload_id, block_list)
-
     },
-    async uploadSmallFile(upload_id, local_path){
-      let file = this.$file.readSmallFile(local_path)
-      let formData = new FormData()
-      let headers = formData.getHeaders()
-
-      formData.append('id', upload_id)
-      formData.append('file', file)
-      await this.$axios.post(
-          "/zxi/auth/upload/file",
-          formData,
-          {headers}
-      )
-    },
-    uploadStart(){
-      for (let upload_info of this.tableData){
-        if (upload_info["Uploading"] && !upload_info["IsComplete"]){
+    uploadCheck() {
+      for (let upload_info of this.tableData) {
+        if (upload_info["uploading"] && !upload_info["is_complete"] && !this.$stream_map[upload_info["id"]]) {
           this.uploadLocalFile(
-              upload_info["Id"], upload_info["Name"], upload_info["LocalPath"])
+              upload_info["id"], upload_info["name"], upload_info["local_path"])
         }
       }
     },
     handleSelectionChange(val) {
-      console.log(val);
       this.multipleSelection = val;
     },
-    selectionStart() {},
-    selectionPause() {},
-    selectionCancel() {},
+    selectionStart() {
+      for (let row of this.multipleSelection){
+        this.startUpload(row)
+      }
+    },
+    selectionPause() {
+      for (let row of this.multipleSelection){
+        this.pauseUpload(row)
+      }
+    },
+    selectionCancel() {
+      for (let row of this.multipleSelection){
+        this.cancelUpload(row)
+      }
+    },
     startUpload(row) {
-      this.uploadLocalFile(row['Id'], row["Name"], row['LocalPath'])
+      if (!row["uploading"] && !row["is_complete"]) {
+        let form = new FormData()
+        form.append('upload_id', row["id"])
+        this.$axios
+            .post(
+                "/zxi/auth/upload/start",
+                form
+            )
+            .then(() => {
+              this.showUploadTable()
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+      }
     },
     pauseUpload(row) {
-      console.log(row);
-      row["stream"].emit("end")
-      clearInterval(this.interval_map[row['Id']])
+      if (row["uploading"] && !row["is_complete"]) {
+        let form = new FormData()
+        form.append('upload_id', row["id"])
+        this.$axios
+            .post(
+                "/zxi/auth/upload/pause",
+                form
+            )
+            .then(() => {
+              this.$stream_map[row['id']].emit("end")
+              delete this.$stream_map[row['id']]
+              clearInterval(this.interval_map[row['id']])
+              this.showUploadTable()
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+      }
     },
     cancelUpload(row) {
-      console.log(row);
+      if (!row["is_complete"]) {
+        let form = new FormData()
+        form.append('upload_id', row["id"])
+        this.$axios
+            .post(
+                "/zxi/auth/upload/cancel",
+                form
+            )
+            .then(() => {
+              if (row["stream"]) {
+                row["stream"].emit("end")
+                clearInterval(this.interval_map[row['id']])
+              }
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+      }
     },
     saveFile(path) {
-      this.$file.getFilesList(path).then(data=>{
+      this.$file.getFilesList(path).then(data => {
+        let form = new FormData()
+        form.append('size', data[0]["size"])
+        form.append('hash', data[0]["hash"])
+        form.append('name', data[0]["name"])
+        form.append('path', data[0]["path"])
         this.$axios
-            .post("/zxi/auth/file/savefileinfo", data[0])
+            .post(
+                "/zxi/auth/file/save",
+                form
+            )
             .then(() => {
               this.cpage = 1
-              this.showUploads()
+              this.showUploadTable()
             })
             .catch((error) => {
               console.log(error);
@@ -164,21 +207,25 @@ export default {
       })
     },
     saveDir(path) {
-      this.$file.getFilesList(path).then(data=>{
-        this.$axios
-            .post("/zxi/auth/file/savefilesinfo",
-                {
-                  files: data,
-                  root: path
-                }
+      this.$file.getFilesList(path).then(async data => {
+        for (let file_info of data) {
+          let form = new FormData()
+          form.append('size', file_info["size"])
+          form.append('hash', file_info["hash"])
+          form.append('name', file_info["name"])
+          form.append('path', file_info["path"])
+          form.append('root', path)
+          try {
+            await this.$axios.post(
+                "/zxi/auth/file/save",
+                form
             )
-            .then(() => {
-              this.cpage = 1
-              this.showUploads()
-            })
-            .catch((error) => {
-              console.log(error);
-            })
+            this.cpage = 1
+            this.showUploadTable()
+          } catch (err) {
+            console.log(err)
+          }
+        }
       })
     },
     openDoalog(type) {
@@ -197,20 +244,20 @@ export default {
         }
       });
     },
-    async showUploadInfo(upload_id){
+    async showUploadInfo(upload_id) {
       let response = await this.$axios.get(
           "/zxi/auth/upload/info", {
-            params:{
-              id: upload_id
+            params: {
+              upload_id: upload_id
             }
           }
       )
-      return response.data["upload_info"]
+      return response.data
     },
-    showUploads(){
+    showUploadTable() {
       this.$axios.get(
           "/zxi/auth/upload/show", {
-            params:{
+            params: {
               page: this.cpage,
               size: this.page_size
             }
@@ -218,52 +265,78 @@ export default {
       ).then((response) => {
         let data = response.data
         this.total = data["count"]
-        this.tableData = data["upload_list"]
+        this.tableData = []
+        for (let upload of data["upload_list"]) {
+          upload.name = this.getFileByPath(upload["local_path"])
+          upload.size_fmt = this.strSize(upload["size"])
+          this.tableData.push(upload)
+        }
+        this.uploadCheck()
       }).catch((error) => {
         console.log(error);
       });
     },
-    showProgress(upload_id){
+    showProgress(upload_id) {
       this.$axios.get(
           "/zxi/auth/upload/progress", {
-            params:{
-              id: upload_id
+            params: {
+              upload_id: upload_id
             }
           }
       ).then((response) => {
         let progress = response.data["progress"]
-        for(let i=0; i<this.tableData.length; i++){
-          if(this.tableData[i]["Id"] === upload_id){
-            this.tableData[i]["Progress"] = progress
+        for (let i = 0; i < this.tableData.length; i++) {
+          if (this.tableData[i]["id"] === upload_id) {
+            if (parseInt(progress) === 100) {
+              this.tableData[i]["rate"] = ""
+              this.tableData[i]["progress"] = progress
+              this.tableData[i]["uploading"] = 0
+              this.tableData[i]["is_complete"] = 1
+              clearInterval(this.interval_map[upload_id])
+            } else {
+              let diff_value = progress - this.tableData[i]["progress"]
+              if (diff_value > 0) {
+                let rate = (diff_value / 100) * this.tableData[i]["size"] / (this.timeout / 1000)
+                this.tableData[i]["rate"] = this.strSize(rate)
+              }
+              this.tableData[i]["progress"] = parseFloat(progress.toFixed(1))
+            }
           }
         }
-        if (progress === 100){
-          clearInterval(this.interval_map[upload_id])
-        }
       }).catch((error) => {
+        clearInterval(this.interval_map[upload_id])
         console.log(error);
       });
     },
-    openUpload(){
-      this.$axios.get(
-          "/zxi/auth/upload/show", {
-            params:{
-              page: this.cpage,
-              size: this.page_size
-            }
-          }
-      ).then((response) => {
-        let data = response.data
-        this.total = data["count"]
-        this.tableData = data["upload_list"]
-        this.uploadStart()
-      }).catch((error) => {
-        console.log(error);
-      });
+    strSize(size) {
+      let unitList = ["B", "KB", "MB", "GB", "TB"]
+      let index = 0
+      while (size > 1024) {
+        index++
+        size = size / 1024
+      }
+      return `${size.toFixed(2)}${unitList[index]}`
+    },
+    getFileByPath(path) {
+      path = path.replace(/\\/g, `/`)
+      if (path === "") {
+        return "."
+      }
+      while (path.length > 0 && path[path.length - 1] === '/') {
+        path = path.slice(0, path.length - 1)
+      }
+      let i = path.lastIndexOf("/")
+      if (i >= 0) {
+        path = path.slice(i + 1)
+      }
+      if (path === "") {
+        return "/"
+      }
+      return path
     }
   },
   mounted() {
-    this.openUpload()
+    this.showUploadTable()
   }
 };
 </script>
@@ -273,6 +346,7 @@ export default {
   margin: 20px;
   height: 90%;
 }
+
 .but_right {
   float: right;
 }

@@ -11,6 +11,7 @@ axios.defaults.adapter = require('axios/lib/adapters/http');
 Vue.prototype.$axios = axios
 Vue.prototype.$qs = qs
 Vue.prototype.$file = window.require('electron').remote.getGlobal('file')
+Vue.prototype.$stream_map = {}
 
 
 

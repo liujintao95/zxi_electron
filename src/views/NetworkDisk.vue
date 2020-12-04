@@ -8,10 +8,11 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
-    
+
     <div class="content">
       <Dir class="file_list" @open="openDir" v-for="(msg, index) in dir_list" v-bind:msg="msg" :key="index"></Dir>
-      <File class="file_list" @open="openFile" v-for="(msg, index) in file_list" v-bind:msg="msg" :key="index+'file'"></File>
+      <File class="file_list" @open="openFile" v-for="(msg, index) in file_list" v-bind:msg="msg"
+            :key="index+'file'"></File>
     </div>
   </div>
 </template>
@@ -19,6 +20,7 @@
 <script>
 import File from '@/components/File.vue'
 import Dir from '@/components/Dir.vue'
+
 export default {
   name: 'NetworkDisk',
   components: {
@@ -39,48 +41,48 @@ export default {
     };
   },
   methods: {
-    filesShow(){
-      this.$axios.get("/zxi/auth/file/showfiles",
-      {
-        params: {
-          path: this.cur_dir.path,
-          dir_id: this.cur_dir.id,
-        }
-      })
-      .then((response) => {
-        let data = response.data
-        this.dir_list = data.dir_list
-        this.file_list = data.file_list
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    filesShow() {
+      this.$axios.get("/zxi/auth/file/show",
+          {
+            params: {
+              path: this.cur_dir.path,
+              dir_id: this.cur_dir.id,
+            }
+          })
+          .then((response) => {
+            let data = response.data
+            this.dir_list = data.dir_list
+            this.file_list = data.file_list
+          })
+          .catch((error) => {
+            console.log(error);
+          });
     },
-    openDir(msg){
-      console.log("befor",this.history_list)
-      this.cur_dir.id = msg.Id
-      this.cur_dir.name = msg.Name
-      if (msg.Path.charAt(msg.Path.length - 1) !== "/"){
-        this.cur_dir.path = msg.Path + "/" + msg.Name
+    openDir(msg) {
+      console.log("befor", this.history_list)
+      this.cur_dir.id = msg["id"]
+      this.cur_dir.name = msg["name"]
+      if (msg.path.charAt(msg["path"].length - 1) !== "/") {
+        this.cur_dir.path = msg["path"] + "/" + msg["name"]
       } else {
-        this.cur_dir.path = msg.Path + msg.Name
+        this.cur_dir.path = msg["path"] + msg["name"]
       }
       this.history_list.push({
-        id: msg.Id,
-        name: msg.Name,
-        path: this.cur_dir.path,
+        id: msg["id"],
+        name: msg["name"],
+        path: this.cur_dir["path"],
       })
       console.log(this.history_list)
       this.filesShow()
     },
-    dirChange(item, index){
-      if(item){
+    dirChange(item, index) {
+      if (item) {
         this.cur_dir = {
-          id: item.id,
-          path: item.path,
-          name: item.name,
+          id: item["id"],
+          path: item["path"],
+          name: item["name"],
         }
-        this.history_list = this.history_list.slice(0,index+1)
+        this.history_list = this.history_list.slice(0, index + 1)
       } else {
         this.history_list = []
         this.cur_dir = {
@@ -91,7 +93,7 @@ export default {
       }
       this.filesShow()
     },
-    openFile(msg){
+    openFile(msg) {
 
     }
   },
@@ -103,15 +105,17 @@ export default {
 </script>
 
 <style>
-.networkdisk{
+.networkdisk {
   margin: 20px;
 }
-.header{
+
+.header {
   margin-bottom: 30px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgb(224, 223, 223);
 }
-.file_list{
+
+.file_list {
   width: 120px;
   margin: 0 10px;
   height: 150px;
