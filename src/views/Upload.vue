@@ -45,7 +45,7 @@
             <el-button v-else-if="scope.row['uploading'] && !scope.row['is_complete']" @click="pauseUpload(scope.row)"
                        type="text" size="small">暂停
             </el-button>
-            <el-button v-show="!scope.row['is_complete']" @click="cancelUpload(scope.row)" type="text" size="small">取消</el-button>
+            <el-button v-if="!scope.row['is_complete']" @click="cancelUpload(scope.row)" type="text" size="small">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -194,7 +194,7 @@ export default {
         form.append('path', data[0]["path"])
         this.$axios
             .post(
-                "/zxi/auth/file/save",
+                "/zxi/auth/upload/create",
                 form
             )
             .then(() => {
@@ -217,7 +217,7 @@ export default {
           form.append('root', path)
           try {
             await this.$axios.post(
-                "/zxi/auth/file/save",
+                "/zxi/auth/upload/create",
                 form
             )
             this.cpage = 1
@@ -267,7 +267,6 @@ export default {
         this.total = data["count"]
         this.tableData = []
         for (let upload of data["upload_list"]) {
-          upload.name = this.getFileByPath(upload["local_path"])
           upload.size_fmt = this.strSize(upload["size"])
           this.tableData.push(upload)
         }
@@ -316,23 +315,6 @@ export default {
         size = size / 1024
       }
       return `${size.toFixed(2)}${unitList[index]}`
-    },
-    getFileByPath(path) {
-      path = path.replace(/\\/g, `/`)
-      if (path === "") {
-        return "."
-      }
-      while (path.length > 0 && path[path.length - 1] === '/') {
-        path = path.slice(0, path.length - 1)
-      }
-      let i = path.lastIndexOf("/")
-      if (i >= 0) {
-        path = path.slice(i + 1)
-      }
-      if (path === "") {
-        return "/"
-      }
-      return path
     }
   },
   mounted() {
