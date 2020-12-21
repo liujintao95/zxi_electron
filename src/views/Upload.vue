@@ -84,12 +84,10 @@ export default {
     },
     uploadLocalFile(upload_id, file_name, local_path) {
       this.showUploadInfo(upload_id).then(data => {
-        let upload = data["upload_info"]["upload_map"]
-        let block_list = data["upload_info"]["block_list"]
+        let upload = data["upload_info"]
         if (upload["is_complete"] === 0) {
-          this.uploadFile(upload_id, local_path, upload["block_size"], block_list)
+          this.uploadFile(upload_id, local_path, upload["block_size"], upload["block_list"])
               .catch(err => {
-                console.log(err)
               })
           this.interval_map[upload_id] = setInterval(this.showProgress, this.timeout, upload_id)
         }
@@ -98,7 +96,7 @@ export default {
       })
     },
     async uploadFile(upload_id, local_path, block_size, block_list) {
-      let stream = this.$file.createFileStream(local_path, block_size)
+      let stream = this.$file.createReadStream(local_path, block_size)
       this.$stream_map[upload_id] = stream
       await this.$file.uploadFileStream(stream, upload_id, block_list)
     },
@@ -155,8 +153,10 @@ export default {
                 form
             )
             .then(() => {
-              this.$stream_map[row['id']].emit("end")
-              delete this.$stream_map[row['id']]
+              if (this.$stream_map[row['id']]){
+                this.$stream_map[row['id']].emit("end")
+                delete this.$stream_map[row['id']]
+              }
               clearInterval(this.interval_map[row['id']])
               this.showUploadTable()
             })

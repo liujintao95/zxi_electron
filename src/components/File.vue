@@ -79,7 +79,19 @@ export default {
       console.log('打开文件')
     },
     downloadFile() {
-      console.log('下载文件')
+      let form = new FormData()
+      form.append('file_id', this.msg["id"])
+      this.$axios
+          .post(
+              "/zxi/auth/download/create",
+              form
+          )
+          .then(() => {
+            this.$message.success("成功添加下载："+this.msg["name"])
+          })
+          .catch((error) => {
+            console.log(error);
+          });
     },
     moveFile() {
       console.log('移动文件')

@@ -73,7 +73,30 @@ function uploadFile(file_path, upload_id) {
     })
 }
 
-function createFileStream(file_path, size) {
+function createWriteStream(file_path, size) {
+    return fs.createWriteStream(file_path, {highWaterMark: size})
+}
+
+async function downloadFileStream(stream, download_id, block_list) {
+    for (let block of block_list) {
+        if (block["is_complete"] === 0) {
+            let form = new FormData()
+            let headers = form.getHeaders()
+            form.append('download_id', download_id)
+            form.append('block_id', block["id"])
+            let res = await axios.post(
+                BaseURL + "/zxi/auth/download/buffer",
+                form,
+                {headers}
+            )
+            stream.write(Buffer.from(res["buffer"]))
+        }
+    }
+    stream.end()
+    return download_id
+}
+
+function createReadStream(file_path, size) {
     return fs.createReadStream(file_path, {highWaterMark: size})
 }
 
@@ -127,7 +150,9 @@ module.exports = {
     getFilesList: getFilesList,
     fileInfo: fileInfo,
     uploadFile: uploadFile,
-    createFileStream: createFileStream,
+    createWriteStream: createWriteStream,
+    downloadFileStream: downloadFileStream,
+    createReadStream: createReadStream,
     uploadFileStream: uploadFileStream,
     pauseUploadFileStream: pauseUploadFileStream,
 }

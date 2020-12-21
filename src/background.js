@@ -11,7 +11,7 @@ global.file = {
   getFilesList: fileHandler.getFilesList,
   fileInfo: fileHandler.fileInfo,
   uploadFile: fileHandler.uploadFile,
-  createFileStream: fileHandler.createFileStream,
+  createReadStream: fileHandler.createReadStream,
   uploadFileStream: fileHandler.uploadFileStream,
   pauseUploadFileStream: fileHandler.pauseUploadFileStream,
 }
