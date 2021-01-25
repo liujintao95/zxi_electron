@@ -3,7 +3,7 @@
     <div class="header">
       <el-breadcrumb separator-class="el-icon-arrow-right">
         <el-breadcrumb-item><a @click="dirChange()">首页</a></el-breadcrumb-item>
-        <el-breadcrumb-item v-for="item, index in history_list" :key="index+'breadcrumb'">
+        <el-breadcrumb-item v-for="(item, index) in history_list" :key="index+'breadcrumb'">
           <a @click="dirChange(item, index)">{{ item.name }}</a>
         </el-breadcrumb-item>
       </el-breadcrumb>
@@ -95,7 +95,7 @@ export default {
     },
     openFile(msg) {
 
-    }
+    },
   },
 
   mounted() {

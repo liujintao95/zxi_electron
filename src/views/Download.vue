@@ -7,7 +7,7 @@
         <el-button @click="selectionCancel" icon="el-icon-delete" size="small">取消</el-button>
       </el-button-group>
     </div>
-    <div>
+    <div style="height: 100%">
       <el-table
           ref="multipleTable"
           :data="tableData"
@@ -20,11 +20,11 @@
             width="55">
         </el-table-column>
         <el-table-column
-            prop="file_name"
+            prop="name"
             label="文件名">
         </el-table-column>
         <el-table-column
-            prop="file_size"
+            prop="size_fmt"
             label="大小"
             width="120">
         </el-table-column>
@@ -81,8 +81,23 @@ export default {
       this.cpage = page
       this.showDownloadTable()
     },
-    downloadZXiFile(){
-
+    downloadZXiFile(download_id, file_name, local_path){
+      this.showDownloadInfo(download_id).then(data=>{
+        let download = data["download_info"]
+        if (download["is_complete"] === 0) {
+          this.downloadFile(download_id, local_path, download["block_size"], download["block_list"])
+              .catch(err => {
+              })
+          this.interval_map[download_id] = setInterval(this.showProgress, this.timeout, download_id)
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    async downloadFile(download_id, local_path, block_size, block_list) {
+      let stream = this.$file.createWriteStream(local_path, block_size)
+      this.$stream_map[download_id] = stream
+      await this.$file.downloadFileStream(stream, download_id, block_list)
     },
     downloadCheck() {
       for (let download_info of this.tableData) {
@@ -229,12 +244,18 @@ export default {
       }
       return `${size.toFixed(2)}${unitList[index]}`
     }
+  },
+  mounted(){
+    this.showDownloadTable()
   }
+  
 }
 </script>
 
 <style>
 .download {
   margin: 20px;
+  height: 90%;
 }
+
 </style>

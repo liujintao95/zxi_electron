@@ -81,6 +81,7 @@ export default {
     downloadFile() {
       let form = new FormData()
       form.append('file_id', this.msg["id"])
+      form.append('download_path', 'C:\\Users\\LoveTt\\Desktop\\ZXi_Net_Disk\\zxi_network_disk_electron')
       this.$axios
           .post(
               "/zxi/auth/download/create",
