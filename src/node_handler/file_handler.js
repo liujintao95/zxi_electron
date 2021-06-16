@@ -11,7 +11,7 @@ const HashSize = 1024 * 1024
 function getFileInfo(file_path, json) {
     return new Promise((resolve, reject) => {
         let state = fs.statSync(file_path)
-        let stream = fs.createReadStream(file_path, {highWaterMark: HashSize})
+        let stream = fs.createReadStream(file_path, { highWaterMark: HashSize })
         let fsHash = crypto.createHash('sha256')
 
         stream.on('data', chunk => {
@@ -61,10 +61,10 @@ function uploadFile(file_path, upload_id) {
     form.append('block_id', "1")
     form.append('buffer', buffer.toString())
     return new Promise((resolve, reject) => {
-        axios.post(
+        axios.put(
             BaseURL + "/zxi/auth/upload/buffer",
             form,
-            {headers}
+            { headers }
         ).then(res => {
             resolve(res)
         }).catch(err => {
@@ -74,7 +74,7 @@ function uploadFile(file_path, upload_id) {
 }
 
 function createWriteStream(file_path, size) {
-    return fs.createWriteStream(file_path, {highWaterMark: size})
+    return fs.createWriteStream(file_path, { highWaterMark: size })
 }
 
 async function downloadFileStream(stream, download_id, block_list) {
@@ -84,10 +84,10 @@ async function downloadFileStream(stream, download_id, block_list) {
             let headers = form.getHeaders()
             form.append('download_id', download_id)
             form.append('block_id', block["id"])
-            let res = await axios.post(
+            let res = await axios.put(
                 BaseURL + "/zxi/auth/download/buffer",
                 form,
-                {headers}
+                { headers }
             )
             stream.write(Buffer.from(res["buffer"]))
         }
@@ -97,7 +97,7 @@ async function downloadFileStream(stream, download_id, block_list) {
 }
 
 function createReadStream(file_path, size) {
-    return fs.createReadStream(file_path, {highWaterMark: size})
+    return fs.createReadStream(file_path, { highWaterMark: size })
 }
 
 function uploadFileStream(stream, upload_id, block_list) {
@@ -120,10 +120,10 @@ function uploadFileStream(stream, upload_id, block_list) {
                 form.append('block_id', offset_map[i]["id"])
                 form.append('offset', i)
                 form.append('buffer', block.toString())
-                axios.post(
+                axios.put(
                     BaseURL + "/zxi/auth/upload/buffer",
                     form,
-                    {headers}
+                    { headers }
                 ).then(res => {
                     stream.resume()
                     // 修改进度条
